@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="BIBLE TIME - Interactive biblical games and activities">
+    
+    <title>BIBLE TIME</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="assets/icons/favicon.ico">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #e94560;
+            --text-secondary: #ffffff;
+            --text-muted: #a8a8a8;
+            --accent: #e94560;
+            --particle-color: rgba(233, 69, 96, 0.6);
+            --glass-bg: rgba(26, 26, 46, 0.8);
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Arial', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-secondary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Particles Canvas */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(233, 69, 96, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-placeholder {
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            /* Replace this div with your logo image */
+        }
+
+        .site-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-primary);
+            letter-spacing: 2px;
+        }
+
+        /* Theme Slider */
+        .theme-slider-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+
+        .theme-slider {
+            width: 80px;
+            height: 30px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .theme-slider-handle {
+            width: 26px;
+            height: 26px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+            cursor: grab;
+        }
+
+        .theme-slider-handle:active {
+            cursor: grabbing;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 120px;
+            padding: 0 20px 100px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .game-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(233, 69, 96, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+
+        .game-card:hover::before {
+            left: 100%;
+        }
+
+        .game-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+        }
+
+        .game-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .game-description {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(233, 69, 96, 0.2);
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer h3 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .footer p {
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .footer-links {
+            margin-top: 20px;
+        }
+
+        .footer-links a {
+            color: var(--accent);
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-secondary);
+        }
+
+        /* Light Theme */
+        body.light-theme {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #333333;
+            --text-muted: #666666;
+            --accent: #3498db;
+            --particle-color: rgba(52, 152, 219, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .header {
+                height: 70px;
+            }
+
+            .site-title {
+                font-size: 20px;
+                letter-spacing: 1px;
+            }
+
+            .logo-placeholder {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .main-content {
+                margin-top: 100px;
+                padding: 0 15px 80px;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .game-card {
+                padding: 25px;
+            }
+
+            .game-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+
+            .theme-slider-container {
+                top: 15px;
+                right: 15px;
+            }
+
+            .theme-slider {
+                width: 60px;
+                height: 26px;
+            }
+
+            .theme-slider-handle {
+                width: 22px;
+                height: 22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                height: 60px;
+                padding: 0 15px;
+            }
+
+            .site-title {
+                font-size: 18px;
+            }
+
+            .logo-placeholder {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+
+            .main-content {
+                margin-top: 90px;
+                padding: 0 10px 60px;
+            }
+
+            .game-card {
+                padding: 20px;
+                border-radius: 15px;
+            }
+
+            .footer {
+                padding: 30px 15px;
+            }
+        }
+
+        /* PWA Install Button */
+        .install-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .install-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .install-btn.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles Canvas -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-container">
+            <div class="logo-placeholder">
+                BT
+                <!-- Replace this div with: <img src="assets/logo.png" alt="BIBLE TIME" class="logo"> -->
+                <img src="assets/logo.png" alt="BIBLE TIME" class="logo" style="width: 50px; height: 50px; border-radius: 10px;">
+            </div>
+            <h1 class="site-title">BIBLE TIME</h1>
+        </div>
+    </header>
+
+    <!-- Theme Slider -->
+    <div class="theme-slider-container">
+        <div class="theme-slider" id="theme-slider">
+            <div class="theme-slider-handle" id="theme-handle"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="games-grid" id="games-grid">
+            <!-- Games will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <h3>About BIBLE TIME</h3>
+            <p>Interactive biblical games and activities to explore faith and scripture in engaging ways.</p>
+            <p>Developed in 2025 by [Arthik_S]</p>
+            <div class="footer-links">
+                <a href="mailto:https://t.me/Arthik_S">Contact</a>
+                <a href="#privacy">Privacy Policy</a>
+                <a href="#support">Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PWA Install Button -->
+    <button class="install-btn" id="install-btn">Install App</button>
+
+    <script>
+        // Games configuration
+        const gamesConfig = [
+            {
+                id: 'bible-quiz',
+                title: 'Bible Quiz',
+                description: 'Test your knowledge of biblical stories, characters, and verses.',
+                icon: '📖',
+                path: 'games/bible-quiz/'
+            },
+            {
+                id: 'verse-memory',
+                title: 'Verse Memory',
+                description: 'Memorize and practice important Bible verses through interactive games.',
+                icon: '🧠',
+                path: 'games/verse-memory/'
+            },
+            {
+                id: 'biblical-timeline',
+                title: 'Biblical Timeline',
+                description: 'Explore the chronology of biblical events and characters.',
+                icon: '📅',
+                path: 'games/biblical-timeline/'
+            },
+            {
+                id: 'parable-puzzle',
+                title: 'Parable Puzzles',
+                description: 'Solve puzzles based on Jesus parables and their meanings.',
+                icon: '🧩',
+                path: 'games/parable-puzzle/'
+            },
+            {
+                id: 'bible-geography',
+                title: 'Bible Geography',
+                description: 'Learn about biblical locations and their significance.',
+                icon: '🗺️',
+                path: 'games/bible-geography/'
+            },
+            {
+                id: 'character-match',
+                title: 'Character Match',
+                description: 'Match biblical characters with their stories and achievements.',
+                icon: '👥',
+                path: 'games/character-match/'
+            }
+        ];
+
+        // Particles system
+        class ParticleSystem {
+            constructor() {
+                this.canvas = document.getElementById('particles-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.particleCount = window.innerWidth < 768 ? 30 : 50;
+                
+                this.resize();
+                this.createParticles();
+                this.animate();
+                
+                window.addEventListener('resize', () => this.resize());
+            }
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            createParticles() {
+                this.particles = [];
+                for (let i = 0; i < this.particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        size: Math.random() * 2 + 1,
+                        opacity: Math.random() * 0.5 + 0.3
+                    });
+                }
+            }
+            
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                const style = getComputedStyle(document.documentElement);
+                const particleColor = style.getPropertyValue('--particle-color');
+                
+                this.particles.forEach(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    
+                    if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
+                    if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = particleColor;
+                    this.ctx.globalAlpha = particle.opacity;
+                    this.ctx.fill();
+                });
+                
+                this.ctx.globalAlpha = 1;
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Theme slider functionality
+        class ThemeSlider {
+            constructor() {
+                this.slider = document.getElementById('theme-slider');
+                this.handle = document.getElementById('theme-handle');
+                this.isDragging = false;
+                this.sliderRect = null;
+                this.currentPosition = 0;
+                
+                this.bindEvents();
+            }
+            
+            bindEvents() {
+                this.handle.addEventListener('mousedown', (e) => this.startDrag(e));
+                this.handle.addEventListener('touchstart', (e) => this.startDrag(e));
+                
+                document.addEventListener('mousemove', (e) => this.drag(e));
+                document.addEventListener('touchmove', (e) => this.drag(e));
+                
+                document.addEventListener('mouseup', () => this.stopDrag());
+                document.addEventListener('touchend', () => this.stopDrag());
+            }
+            
+            startDrag(e) {
+                this.isDragging = true;
+                this.sliderRect = this.slider.getBoundingClientRect();
+                e.preventDefault();
+            }
+            
+            drag(e) {
+                if (!this.isDragging) return;
+                
+                const clientX = e.clientX || e.touches[0].clientX;
+                const x = clientX - this.sliderRect.left;
+                const maxX = this.sliderRect.width - 30;
+                
+                this.currentPosition = Math.max(0, Math.min(x, maxX));
+                const percentage = this.currentPosition / maxX;
+                
+                this.handle.style.transform = `translateX(${this.currentPosition}px)`;
+                this.updateTheme(percentage);
+            }
+            
+            stopDrag() {
+                this.isDragging = false;
+            }
+            
+            updateTheme(percentage) {
+                const body = document.body;
+                
+                if (percentage > 0.7) {
+                    body.classList.add('light-theme');
+                } else if (percentage < 0.3) {
+                    body.classList.remove('light-theme');
+                }
+                
+                // Smooth color transition
+                const root = document.documentElement;
+                const darkColors = {
+                    '--bg-primary': '#1a1a2e',
+                    '--bg-secondary': '#16213e',
+                    '--bg-card': '#0f3460',
+                    '--text-primary': '#e94560',
+                    '--text-secondary': '#ffffff',
+                    '--text-muted': '#a8a8a8'
+                };
+                
+                const lightColors = {
+                    '--bg-primary': '#f8f9fa',
+                    '--bg-secondary': '#ffffff',
+                    '--bg-card': '#ffffff',
+                    '--text-primary': '#2c3e50',
+                    '--text-secondary': '#333333',
+                    '--text-muted': '#666666'
+                };
+                
+                // Interpolate colors based on percentage
+                Object.keys(darkColors).forEach(prop => {
+                    const darkColor = darkColors[prop];
+                    const lightColor = lightColors[prop];
+                    // This is a simplified version - you'd need a proper color interpolation function
+                    root.style.setProperty(prop, percentage > 0.5 ? lightColor : darkColor);
+                });
+            }
+        }
+
+        // Game cards loader
+        function loadGameCards() {
+            const gamesGrid = document.getElementById('games-grid');
+            
+            gamesConfig.forEach(game => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card';
+                gameCard.innerHTML = `
+                    <div class="game-icon">${game.icon}</div>
+                    <h3 class="game-title">${game.title}</h3>
+                    <p class="game-description">${game.description}</p>
+                `;
+                
+                gameCard.addEventListener('click', () => {
+                    // For now, just show an alert. Replace with actual game loading
+                    alert(`Loading ${game.title}... (Game will be implemented later)`);
+                    // window.location.href = game.path;
+                });
+                
+                gamesGrid.appendChild(gameCard);
+            });
+        }
+
+        // PWA functionality
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.add('show');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    installBtn.classList.remove('show');
+                }
+                
+                deferredPrompt = null;
+            }
+        });
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ParticleSystem();
+            new ThemeSlider();
+            loadGameCards();
+            
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
